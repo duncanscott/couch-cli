@@ -1,0 +1,12 @@
+.classpath
+.gradle
+.project
+.settings
+bin
+build
+/repos
+/tests.log
+/.idea
+/couch-cli.iml
+junk.sh
+target-eclipse

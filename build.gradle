@@ -1,0 +1,76 @@
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin:'application'
+
+sourceCompatibility = 1.6
+mainClassName = 'net.duncanscott.couch_cli.client.CouchClient'
+
+jar {
+	manifest {
+		attributes 'Implementation-Title': 'Couch-Cli', 'Implementation-Version': version
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+	compile 'org.codehaus.groovy:groovy-all:2.0.7'
+	//compile 'org.codehaus.groovy:groovy-all:2.0.8'
+	compile 'log4j:log4j:1.2.17'
+	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
+	compile 'commons-cli:commons-cli:1.2'
+	
+	//testCompile group: 'junit', name: 'junit', version: '4.11'
+	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"	
+}
+
+processResources {
+	filter { String line -> 
+		def matcher = line =~ /<%([^%]+)%>/
+		matcher?.eachWithIndex { match, Integer index ->
+			String prop = matcher[index][1]?.trim()
+			String value  = project.properties[prop]
+			if (value == null) {
+				throw new RuntimeException("no property defined for substitution variable ${matcher[index][0]}")
+			}
+			line = matcher.replaceAll(value)
+		}
+		return line
+	}
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+sourceSets {
+	main {
+		groovy {
+			srcDir 'src/main/groovy'
+		}
+		resources {
+			srcDir 'src/main/resources'
+		}
+	}
+	test {
+		groovy {
+			srcDir 'src/test/groovy'
+		}
+		resources {
+			srcDir 'src/test/resources'
+		}
+	}
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
+
