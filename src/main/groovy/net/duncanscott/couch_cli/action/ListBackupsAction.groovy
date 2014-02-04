@@ -59,7 +59,7 @@ class ListBackupsAction extends AbstractAction {
         noTagOption = new NoTagOption(this)
     }
 
-    Set getBackupDatabases() {
+    Set<String> getBackupDatabases() {
         Set<String> databases = []
         ConfigObject config = requireSubjectDatabase()
         Set tags = tagOption.tags
@@ -97,9 +97,7 @@ class ListBackupsAction extends AbstractAction {
                         return //skip, backup tag matches noTag
                     }
                 }
-                if (all || tags || days != null) {
-                    databases << databaseName //backup selected
-                }
+                databases << databaseName //backup selected
             }
         }
         return databases
