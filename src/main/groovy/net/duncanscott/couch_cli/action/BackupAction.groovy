@@ -51,7 +51,7 @@ class BackupAction extends AbstractAction {
 
     @Override
     String getDescription() {
-        'Backup named couchdb to specified --target with system generated prefix (flags: --continuous, --push).'
+        'Backup databases to --target with system generated prefix.  Databases must be identified via --name or --all.  Flags: --continuous, --push.'
     }
 
     void configureOptions() {

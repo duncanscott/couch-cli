@@ -33,29 +33,29 @@ package net.duncanscott.couch_cli.action
 
 import groovy.json.JsonOutput
 import net.duncanscott.couch_cli.client.CouchClient
-import net.duncanscott.couch_cli.option.NamedAndAllDatabasesOption
+import net.duncanscott.couch_cli.option.NamedDatabasesOption
 
 class DumpRecordsAction extends AbstractAction {
 
-    NamedAndAllDatabasesOption databasesOption
+    NamedDatabasesOption databasesOption
 
 	int pageSize = 100
 	boolean includeDocs = true
 
     @Override
     String getDescription() {
-        'Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name or --all.'
+        'Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name.'
     }
 
     @Override
     void configureOptions() {
-        databasesOption = new NamedAndAllDatabasesOption(this)
+        databasesOption = new NamedDatabasesOption(this)
     }
 
     @Override
 	int performAction() {
 		ConfigObject config = requireSubjectDatabase()
-        databasesOption.requireDatabases(config).each { String database ->
+        databasesOption.requireNamedDatabases(config).each { String database ->
 			api.doForAllRecords(config.couchdb.url, database, includeDocs, pageSize) { json ->
 				message "${JsonOutput.toJson(json)}"
 			}

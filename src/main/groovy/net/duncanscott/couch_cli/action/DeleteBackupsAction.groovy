@@ -42,7 +42,7 @@ class DeleteBackupsAction extends ListBackupsAction {
 
     int performAction() {
         ConfigObject config = requireSubjectDatabase()
-        CouchClient.checkDelete(config)
+        //CouchClient.checkDelete(config)
         backupDatabases.each { String database ->
             message "deleting database ${config.couchdb.name}.${database}"
             api.deleteDatabase(config.couchdb.url, database)

@@ -47,7 +47,7 @@ class ReplicateAction extends AbstractAction {
 
     @Override
     String getDescription() {
-        'Replicate specified database to --target (flags: --continuous, --push).'
+        'Replicate databases to --target.  Identify databases via --name or --all.  Flags: --continuous, --push.'
     }
 
     @Override

@@ -40,25 +40,26 @@ Command line interface to facilitate CouchDB replication and other administrativ
 
 ##Usage
 
-    usage: couch-cli ['<action>'] ['<subject couchdb>'] ['<args>']
+    usage: couch-cli [<action>] [<subject couchdb>] [<args>]
      -h,--help      show usage information
      -v,--version   version of this client
 
     Actions are:
 
-       backup              Backup named couchdb to specified --target with system generated prefix (flags: --continuous, --push).
+       backup              Backup databases to --target with system generated prefix.  Databases must be identified via --name or --all.  Flags: --continuous, --push.
        cancelReplication   Cancel all replication at specified couchdb (by deleting replication records in the _replicator database).
        delete              Delete databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL WITH THIS ONE.
        deleteBackups       Delete backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
        deleteRecords       Delete records in databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL.
-       dumpRecords         Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name or --all.
+       dumpRecords         Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name.
        list                List all databases at specified couchdb
        listBackups         List backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
        listRecords         List all records in databases at the specified couchdb.  Must specify individual databases via --name or --all.
-       replicate           Replicate specified database to --target (flags: --continuous, --push).
+       replicate           Replicate databases to --target.  Identify databases via --name or --all.  Flags: --continuous, --push.
        restore             Restore the specified couchdb --from a backup.  Each database to restore must be identified via --name (--all is invalid). Flags: --push.
 
-To use the tool, you should specify a path to a configuration file via environment property COUCHCLI_CONFIG.  A sample configuration file is shown below.
+To use the tool, you should specify a path to a configuration file via environment property COUCHCLI_CONFIG.  This file identifies the CouchDB instances the tool
+can work with and the operations that are permitted on each.  A sample configuration file is shown below.
 
 Note that cancelReplication, delete, and deleteRecords actions must be enabled in the configuration file to allow the tool to perform these actions
 on a particular CouchDB.
