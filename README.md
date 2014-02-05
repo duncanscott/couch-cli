@@ -94,23 +94,23 @@ on a particular CouchDB.
     }
 
 
-A powerful feature is the ability to tag backups and to retrieve them by date and time.  This facilitates automated creation of point-in-time backups
+A useful feature is the ability to tag backups and to retrieve them by tag and date.  This facilitates automated creation of point-in-time backups
 and cleanup of old backups by cron job.  Sample cron entries:
 
-    #restart continuous backup of all production couchdb databases nightly (replication is continuous but new databases need to be added)
-    15 2 * * * export JAVA_HOME=/opt/tomcat/java/active; /opt/tomcat/tools/couch-cli/bin/couch-cli replicate production --target backup --all --continuous
+    #restart continuous backup of all production couchdb databases nightly (replication is continuous but new databases should be added)
+    15 2 * * *  source /opt/tomcat/.env; /opt/tomcat/tools/couch-cli/bin/couch-cli replicate production --target backup --all --continuous
 
-    #weekly point-in-time backup (0 = Sunday)
-    10 3 * * 0 export JAVA_HOME=/opt/tomcat/java/active; /opt/tomcat/tools/couch-cli/bin/couch-cli backup production --target backup --all --tag weekly
+    #weekly point-in-time backup
+    10 3 * * 0  source /opt/tomcat/.env; /opt/tomcat/tools/couch-cli/bin/couch-cli backup production --target backup --all --tag weekly
 
-    #mon-fri point-in-time backup
-    10 3 * * 2-6 export JAVA_HOME=/opt/tomcat/java/active; /opt/tomcat/tools/couch-cli/bin/couch-cli backup production --target backup --all --tag daily
+    #daily point-in-time backup
+    10 3 * * 2-6  source /opt/tomcat/.env; /opt/tomcat/tools/couch-cli/bin/couch-cli backup production --target backup --all --tag daily
 
     #delete daily backups older than 5 days
-    10 5 * * 2-6 export JAVA_HOME=/opt/tomcat/java/active; /opt/tomcat/tools/couch-cli/bin/couch-cli deleteBackups backup --tag daily --olderThan 5
+    10 5 * * 2-6  source /opt/tomcat/.env; /opt/tomcat/tools/couch-cli/bin/couch-cli deleteBackups backup --tag daily --olderThan 5
 
     #delete all backups older than 30 days
-    30 0 * * * export JAVA_HOME=/opt/tomcat/java/active; /opt/tomcat/tools/couch-cli/bin/couch-cli deleteBackups backup --olderThan 30
+    30 0 * * *  source /opt/tomcat/.env; /opt/tomcat/tools/couch-cli/bin/couch-cli deleteBackups backup --olderThan 30
 
 Note, the --olderThan option includes only databases older than the specified number of days.  A --noTag option is also available to screen out
 backups containing the specified tags.
