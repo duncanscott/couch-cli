@@ -81,6 +81,29 @@ processResources {
 	}
 }
 
+task unitTest(type:Test) {
+	binResultsDir = file("$buildDir/$name-results/binary")
+	reports {
+		html.destination = file("$buildDir/reports/$name")
+		junitXml.destination = binResultsDir.parentFile
+	}
+	classpath = sourceSets.unitTest.runtimeClasspath
+	testClassesDir = sourceSets.unitTest.output.classesDir
+}
+
+task integrationTest(type:Test) {
+	mustRunAfter unitTest
+	binResultsDir = file("$buildDir/$name-results/binary")
+	reports {
+		html.destination = file("$buildDir/reports/$name")
+		junitXml.destination = binResultsDir.parentFile
+	}
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	testClassesDir = sourceSets.integrationTest.output.classesDir
+}
+
+test.dependsOn integrationTest, unitTest
+
 tasks.withType(Test) { testTask ->
 	afterTest { TestDescriptor descriptor, TestResult result ->
 		long duration = result.endTime - result.startTime
