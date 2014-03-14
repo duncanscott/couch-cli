@@ -138,6 +138,9 @@ The code uses the Groovy HTTPBuilder to interact with CouchDB databases.  A know
 encoding URLs that contain a '+' character.  CouchDB allows database names that include the '+' character, but couch-cli will choke
 on such database names.
 
+At the time of writing (March 14, 2014), the IntelliJ gradle plugin is failing to work with gradle version 1.11 specified in the gradle wrapper task.
+You may use a local gradle install of verion 1.10 (and possibly lower) to import the project into IntelliJ.
+
 Some replication behavior is unintuitive.  It is important to understand how CouchDB replication works.
 If a local version of a database is ahead of another, the other database will not be replicated to the local database.  See the following:
 
