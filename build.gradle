@@ -125,6 +125,8 @@ tasks.withType(Test) { testTask ->
 }
 
 task projectProperties {
+	group 'properties'
+	description 'output project.properties'
 	doLast {
 		project.properties.keySet().sort().each { key ->
 			println "${key}=${project.properties[key]}"
@@ -133,6 +135,8 @@ task projectProperties {
 }
 
 task gradleProperties {
+	group 'properties'
+	description 'output gradle.properties'
 	doLast {
 		gradle.properties.keySet().sort().each { key ->
 			println "${key}=${gradle.properties[key]}"
@@ -140,7 +144,19 @@ task gradleProperties {
 	}
 }
 
+task projectConfigurations {
+	group 'properties'
+	description 'output project.configurations'
+	doLast {
+		project.configurations.sort{ it.name }.each { Configuration config ->
+			println "${config.name}"
+		}
+	}
+}
+
 task gradleVersion {
+	group 'properties'
+	description 'output project.properties[gradleVersion]'
 	doLast {
 		println "gradleVersion=${gradle.properties['gradleVersion']}"
 	}
