@@ -6,8 +6,9 @@ Command line interface to facilitate CouchDB replication and other administrativ
 ##Build Locally
 To install locally, you may cd to the project directory and type:
 
-    gradle wrapper
-    gradle installApp
+    gradlew installApp
+
+The application will be created in directory ./build/install.
 
 ##Sample Commands
 
