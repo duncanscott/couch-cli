@@ -8,7 +8,6 @@ class CouchApiIntegrationSpec extends Specification {
 	
 	CouchClient client  = new CouchClient()
 	CouchApi api = new CouchApi()
-	Logger logger = Logger.getLogger(CouchApi.class.name)
 	
 	def "getDatabaseList test"() {
 		setup:

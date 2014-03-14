@@ -28,33 +28,11 @@ dependencies {
 	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"	
 }
 
-task gradleProperties {
-	doLast {
-		gradle.properties.keySet().sort().each { key ->
-			println "${key}=${gradle.properties[key]}"
-		}
-	}
-}
-
-task gradleVersion {
-	doLast {
-		println "gradleVersion=${gradle.properties['gradleVersion']}"
-	}
-}
-
-processResources {
-	filter { String line -> 
-		def matcher = line =~ /<%([^%]+)%>/
-		matcher?.eachWithIndex { match, Integer index ->
-			String prop = matcher[index][1]?.trim()
-			String value  = project.properties[prop]
-			if (value == null) {
-				throw new RuntimeException("no property defined for substitution variable ${matcher[index][0]}")
-			}
-			line = matcher.replaceAll(value)
-		}
-		return line
-	}
+configurations {
+	unitTestCompile.extendsFrom testCompile
+	unitTestRuntime.extendsFrom testRuntime
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
 }
 
 sourceSets {
@@ -66,13 +44,40 @@ sourceSets {
 			srcDir 'src/main/resources'
 		}
 	}
-	test {
+	unitTest {
 		groovy {
-			srcDir 'src/test/groovy'
+			srcDir 'src/test/unit/groovy'
 		}
 		resources {
-			srcDir 'src/test/resources'
+			srcDir 'src/test/unit/resources'
 		}
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath = output + compileClasspath
+	}
+	integrationTest {
+		groovy {
+			srcDir 'src/test/integration/groovy'
+		}
+		resources {
+			srcDir 'src/test/integration/resources'
+		}
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath = output + compileClasspath
+	}
+}
+
+processResources {
+	filter { String line ->
+		def matcher = line =~ /<%([^%]+)%>/
+		matcher?.eachWithIndex { match, Integer index ->
+			String prop = matcher[index][1]?.trim()
+			String value  = project.properties[prop]
+			if (value == null) {
+				throw new RuntimeException("no property defined for substitution variable ${matcher[index][0]}")
+			}
+			line = matcher.replaceAll(value)
+		}
+		return line
 	}
 }
 
@@ -93,5 +98,19 @@ tasks.withType(Test) { testTask ->
 			default:
 				logger.warn "${logMessage}"
 		}
+	}
+}
+
+task gradleProperties {
+	doLast {
+		gradle.properties.keySet().sort().each { key ->
+			println "${key}=${gradle.properties[key]}"
+		}
+	}
+}
+
+task gradleVersion {
+	doLast {
+		println "gradleVersion=${gradle.properties['gradleVersion']}"
 	}
 }
