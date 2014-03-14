@@ -4,7 +4,7 @@ Command line interface to facilitate CouchDB replication and other administrativ
 5+ is required.  (Tested on Java 6 and 7.)
 
 ##Build Locally
-To install locally, you may cd to the project directory and type:
+After cloning the project, you may cd to the project directory and type:
 
     gradlew installApp
 
