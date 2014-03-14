@@ -10,3 +10,6 @@ build
 /couch-cli.iml
 junk.sh
 target-eclipse
+/gradle
+/gradlew
+/gradlew.bat

@@ -1,10 +1,13 @@
 apply plugin: 'groovy'
-apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin:'application'
 
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 mainClassName = 'net.duncanscott.couch_cli.client.CouchClient'
+
+task wrapper(type:Wrapper) {
+	gradleVersion = '1.11'
+}
 
 jar {
 	manifest {
@@ -17,15 +20,26 @@ repositories {
 }
 
 dependencies {
-	compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-	compile 'org.codehaus.groovy:groovy-all:2.0.7'
-	//compile 'org.codehaus.groovy:groovy-all:2.0.8'
+	compile 'org.codehaus.groovy:groovy-all:2.2.2'
 	compile 'log4j:log4j:1.2.17'
-	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
+	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 	compile 'commons-cli:commons-cli:1.2'
 	
-	//testCompile group: 'junit', name: 'junit', version: '4.11'
 	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"	
+}
+
+task gradleProperties {
+	doLast {
+		gradle.properties.keySet().sort().each { key ->
+			println "${key}=${gradle.properties[key]}"
+		}
+	}
+}
+
+task gradleVersion {
+	doLast {
+		println "gradleVersion=${gradle.properties['gradleVersion']}"
+	}
 }
 
 processResources {
@@ -41,10 +55,6 @@ processResources {
 		}
 		return line
 	}
-}
-
-test {
-    systemProperties 'property': 'value'
 }
 
 sourceSets {
@@ -66,11 +76,22 @@ sourceSets {
 	}
 }
 
-uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
-    }
+tasks.withType(Test) { testTask ->
+	afterTest { TestDescriptor descriptor, TestResult result ->
+		long duration = result.endTime - result.startTime
+		String logMessage = "${result.resultType} (${duration} msecs): ${testTask.name} ${descriptor.className} \"${descriptor.name}\""
+		switch (result.resultType) {
+			case TestResult.ResultType.SUCCESS:
+				logger.info "${logMessage}"
+				break;
+			case TestResult.ResultType.FAILURE:
+				logger.error "${logMessage}"
+				break;
+			case TestResult.ResultType.SKIPPED:
+				logger.warn "${logMessage}"
+				break;
+			default:
+				logger.warn "${logMessage}"
+		}
+	}
 }
-
