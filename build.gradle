@@ -124,6 +124,14 @@ tasks.withType(Test) { testTask ->
 	}
 }
 
+task projectProperties {
+	doLast {
+		project.properties.keySet().sort().each { key ->
+			println "${key}=${project.properties[key]}"
+		}
+	}
+}
+
 task gradleProperties {
 	doLast {
 		gradle.properties.keySet().sort().each { key ->
