@@ -1,7 +1,13 @@
 #couch-cli
 
 Command line interface to facilitate CouchDB replication and other administrative tasks.  The gradle build generates both Unix and Windows executables.  Java
-6+ is required.
+5+ is required.  (Tested on Java 6 and 7.)
+
+##Build Locally
+To install locally, you may cd to the project directory and type:
+
+    gradle wrapper
+    gradle installApp
 
 ##Sample Commands
 
@@ -119,7 +125,7 @@ backups containing the specified tags.
 
 ##Notes
 
-New features can easily be added by adding instances of the action (AbstractAction) class.  New actions must be registered
+New features can easily be added by adding subclasses of AbstractAction.  New action subclasses must be registered
 in the actions map of CouchClient.
 
 The logging level is currently set to debug.  The log file will include URLs that might include passwords.  If the logging level is increased
