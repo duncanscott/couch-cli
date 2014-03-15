@@ -96,6 +96,9 @@ task integrationTest(type:Test) {
 test.dependsOn integrationTest, unitTest
 
 tasks.withType(Test) { testTask ->
+	beforeTest { TestDescriptor descriptor->
+		logger.warn "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
+	}
 	afterTest { TestDescriptor descriptor, TestResult result ->
 		long duration = result.endTime - result.startTime
 		String logMessage = "${result.resultType} (${duration} msecs): ${testTask.name} ${descriptor.className} \"${descriptor.name}\""
