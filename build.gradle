@@ -24,8 +24,7 @@ dependencies {
 	compile 'log4j:log4j:1.2.17'
 	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 	compile 'commons-cli:commons-cli:1.2'
-	
-	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"	
+	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
 configurations {
@@ -97,7 +96,8 @@ test.dependsOn integrationTest, unitTest
 
 tasks.withType(Test) { testTask ->
 	beforeTest { TestDescriptor descriptor->
-		logger.warn "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
+		String msg = "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
+		logger.warn msg
 	}
 	afterTest { TestDescriptor descriptor, TestResult result ->
 		long duration = result.endTime - result.startTime
