@@ -94,6 +94,19 @@ task integrationTest(type:Test) {
 
 test.dependsOn integrationTest, unitTest
 
+test {
+	testLogging {
+		// set options for log level LIFECYCLE
+		events "failed"
+		exceptionFormat "short"
+		// set options for log level DEBUG
+		debug {
+			events "started", "skipped", "failed"
+			exceptionFormat "full"
+		}
+	}
+}
+
 tasks.withType(Test) { testTask ->
 	beforeTest { TestDescriptor descriptor->
 		String msg = "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
