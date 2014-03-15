@@ -1,7 +1,7 @@
 #couch-cli
 
 Command line interface to facilitate CouchDB replication and other administrative tasks.  The gradle build generates both Unix and Windows executables.  Java
-5+ is required.  (Tested on Java 6 and 7.)
+7 is required.
 
 ##Build Locally
 After cloning the project, you may cd to the project directory and type:
