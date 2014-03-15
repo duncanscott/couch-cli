@@ -123,7 +123,7 @@ task projectProperties {
 	description 'output project.properties'
 	doLast {
 		project.properties.keySet().sort().each { key ->
-			println "${key}=${project.properties[key]}"
+			logger.warn "${key}=${project.properties[key]}"
 		}
 	}
 }
@@ -133,7 +133,7 @@ task gradleProperties {
 	description 'output gradle.properties'
 	doLast {
 		gradle.properties.keySet().sort().each { key ->
-			println "${key}=${gradle.properties[key]}"
+			logger.warn "${key}=${gradle.properties[key]}"
 		}
 	}
 }
@@ -143,7 +143,7 @@ task projectConfigurations {
 	description 'output project.configurations'
 	doLast {
 		project.configurations.sort{ it.name }.each { Configuration config ->
-			println "${config.name}"
+			logger.warn "${config.name}"
 		}
 	}
 }
@@ -152,6 +152,6 @@ task gradleVersion {
 	group 'properties'
 	description 'output project.properties[gradleVersion]'
 	doLast {
-		println "gradleVersion=${gradle.properties['gradleVersion']}"
+		logger.warn "gradleVersion=${gradle.properties['gradleVersion']}"
 	}
 }
