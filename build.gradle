@@ -46,20 +46,20 @@ sourceSets {
 	}
 	unitTest {
 		groovy {
-			srcDir 'test/unit/groovy'
+			srcDir 'src/test/unit/groovy'
 		}
 		resources {
-			srcDir 'test/unit/resources'
+			srcDir 'src/test/unit/resources'
 		}
 		compileClasspath += sourceSets.main.output
 		runtimeClasspath = output + compileClasspath
 	}
 	integrationTest {
 		groovy {
-			srcDir 'test/integration/groovy'
+			srcDir 'src/test/integration/groovy'
 		}
 		resources {
-			srcDir 'test/integration/resources'
+			srcDir 'src/test/integration/resources'
 		}
 		compileClasspath += sourceSets.main.output
 		runtimeClasspath = output + compileClasspath
