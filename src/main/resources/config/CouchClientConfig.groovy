@@ -1,2 +1,2 @@
-version='<% version %>'
-application.name='<% name %>'
+version="${version}"
+application.name="${name}"

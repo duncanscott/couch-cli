@@ -24,8 +24,7 @@ dependencies {
 	compile 'log4j:log4j:1.2.17'
 	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 	compile 'commons-cli:commons-cli:1.2'
-	
-	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"	
+	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
 configurations {
@@ -67,17 +66,8 @@ sourceSets {
 }
 
 processResources {
-	filter { String line ->
-		def matcher = line =~ /<%([^%]+)%>/
-		matcher?.eachWithIndex { match, Integer index ->
-			String prop = matcher[index][1]?.trim()
-			String value  = project.properties[prop]
-			if (value == null) {
-				throw new RuntimeException("no property defined for substitution variable ${matcher[index][0]}")
-			}
-			line = matcher.replaceAll(value)
-		}
-		return line
+	filesMatching("**/CouchClientConfig.groovy") {
+		expand project.properties
 	}
 }
 
@@ -105,6 +95,10 @@ task integrationTest(type:Test) {
 test.dependsOn integrationTest, unitTest
 
 tasks.withType(Test) { testTask ->
+	beforeTest { TestDescriptor descriptor->
+		String msg = "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
+		logger.warn msg
+	}
 	afterTest { TestDescriptor descriptor, TestResult result ->
 		long duration = result.endTime - result.startTime
 		String logMessage = "${result.resultType} (${duration} msecs): ${testTask.name} ${descriptor.className} \"${descriptor.name}\""
@@ -125,23 +119,39 @@ tasks.withType(Test) { testTask ->
 }
 
 task projectProperties {
+	group 'properties'
+	description 'output project.properties'
 	doLast {
 		project.properties.keySet().sort().each { key ->
-			println "${key}=${project.properties[key]}"
+			logger.warn "${key}=${project.properties[key]}"
 		}
 	}
 }
 
 task gradleProperties {
+	group 'properties'
+	description 'output gradle.properties'
 	doLast {
 		gradle.properties.keySet().sort().each { key ->
-			println "${key}=${gradle.properties[key]}"
+			logger.warn "${key}=${gradle.properties[key]}"
+		}
+	}
+}
+
+task projectConfigurations {
+	group 'properties'
+	description 'output project.configurations'
+	doLast {
+		project.configurations.sort{ it.name }.each { Configuration config ->
+			logger.warn "${config.name}"
 		}
 	}
 }
 
 task gradleVersion {
+	group 'properties'
+	description 'output project.properties[gradleVersion]'
 	doLast {
-		println "gradleVersion=${gradle.properties['gradleVersion']}"
+		logger.warn "gradleVersion=${gradle.properties['gradleVersion']}"
 	}
 }

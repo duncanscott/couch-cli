@@ -5,7 +5,7 @@
 bin
 build
 /repos
-/tests.log
+/tests.log*
 /.idea
 /couch-cli.iml
 junk.sh
