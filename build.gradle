@@ -67,17 +67,8 @@ sourceSets {
 }
 
 processResources {
-	filter { String line ->
-		def matcher = line =~ /<%([^%]+)%>/
-		matcher?.eachWithIndex { match, Integer index ->
-			String prop = matcher[index][1]?.trim()
-			String value  = project.properties[prop]
-			if (value == null) {
-				throw new RuntimeException("no property defined for substitution variable ${matcher[index][0]}")
-			}
-			line = matcher.replaceAll(value)
-		}
-		return line
+	filesMatching("**/CouchClientConfig.groovy") {
+		expand project.properties
 	}
 }
 
