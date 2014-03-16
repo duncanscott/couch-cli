@@ -27,6 +27,12 @@ dependencies {
 	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
+processResources {
+	filesMatching("**/CouchClientConfig.groovy") {
+		expand project.properties
+	}
+}
+
 configurations {
 	unitTestCompile.extendsFrom testCompile
 	unitTestRuntime.extendsFrom testRuntime
@@ -62,12 +68,6 @@ sourceSets {
 		}
 		compileClasspath += sourceSets.main.output
 		runtimeClasspath = output + compileClasspath
-	}
-}
-
-processResources {
-	filesMatching("**/CouchClientConfig.groovy") {
-		expand project.properties
 	}
 }
 
