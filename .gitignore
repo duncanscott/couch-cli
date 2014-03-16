@@ -9,4 +9,5 @@ build
 /.idea
 /couch-cli.iml
 junk.sh
+junk
 target-eclipse
