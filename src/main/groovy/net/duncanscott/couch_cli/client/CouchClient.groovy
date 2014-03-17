@@ -52,6 +52,7 @@ class CouchClient {
     static Map<String, Class<? extends AbstractAction>> actions = [
         'backup':BackupAction,
         'cancelReplication':CancelReplicationAction,
+		'create':CreateDatabaseAction,
         'deleteBackups':DeleteBackupsAction,
         'delete':DeleteDatabaseAction,
         'deleteRecords':DeleteRecordsAction,

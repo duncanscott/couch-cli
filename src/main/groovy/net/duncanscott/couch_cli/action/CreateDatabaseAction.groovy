@@ -2,9 +2,9 @@ package net.duncanscott.couch_cli.action
 
 import groovy.util.ConfigObject;
 import net.duncanscott.couch_cli.option.NameOption
-
 import org.apache.commons.cli.Option
-
+import net.duncanscott.couch_cli.client.CouchClient
+ 
 class CreateDatabaseAction extends AbstractAction {
 
 	NameOption nameOption
