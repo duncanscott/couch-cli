@@ -42,10 +42,9 @@ class BackupNameElements {
 
     static final String BACKUP = 'backup'
     static final String CONTINUOUS = 'continuous'
-    static final SimpleDateFormat timestampFormat = new SimpleDateFormat('yyyyMMddHHmmssSSS')
-
     static final String backupNameRegex = '^' + BACKUP + '_([^_]+)_([^_]+)_([^_]*)_(.+)$'
-    static final Pattern backupNamePattern = Pattern.compile(backupNameRegex)
+
+    final SimpleDateFormat timestampFormat = new SimpleDateFormat('yyyyMMddHHmmssSSS')
 
     String couchDbName
     String databaseName
@@ -54,6 +53,7 @@ class BackupNameElements {
     Set<String> tags = []
 
     static BackupNameElements deconstructBackupName(String backupName) {
+        Pattern backupNamePattern = Pattern.compile(backupNameRegex)
         Matcher m = backupNamePattern.matcher(backupName)
         if (m) {
             BackupNameElements bne = new BackupNameElements()
@@ -63,7 +63,7 @@ class BackupNameElements {
             if (CONTINUOUS == timestampString) {
                 bne.continuousBackup = Boolean.TRUE
             } else {
-                bne.backupStart = timestampFormat.parse(timestampString)
+                bne.backupStart = bne.timestampFormat.parse(timestampString)
             }
             matched[2]?.split('-')?.each { bne.tags << it }
             bne.databaseName = matched[3]
