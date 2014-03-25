@@ -43,6 +43,7 @@ class BackupNameElements {
     static final String BACKUP = 'backup'
     static final String CONTINUOUS = 'continuous'
     static final String backupNameRegex = '^' + BACKUP + '_([^_]+)_([^_]+)_([^_]*)_(.+)$'
+    static final OnDemandCache<Pattern> cachedBackupNamePattern = new OnDemandCache<>()
 
     final SimpleDateFormat timestampFormat = new SimpleDateFormat('yyyyMMddHHmmssSSS')
 
@@ -53,7 +54,7 @@ class BackupNameElements {
     Set<String> tags = []
 
     static BackupNameElements deconstructBackupName(String backupName) {
-        Pattern backupNamePattern = Pattern.compile(backupNameRegex)
+        Pattern backupNamePattern = cachedBackupNamePattern.fetch { Pattern.compile(backupNameRegex) }
         Matcher m = backupNamePattern.matcher(backupName)
         if (m) {
             BackupNameElements bne = new BackupNameElements()
