@@ -55,7 +55,6 @@ class TagOption extends BaseOption {
             throw new CouchClientErrorMessage("invalid tag(s) ${invalidTags.collect{'"' + it + '"'}}.  Tags must contain only letters and digits.")
         }
         return tagNames
-    }
+	}
 
 }
-
