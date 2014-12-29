@@ -91,7 +91,7 @@ class CouchClient {
 	ConfigObject getCouchClientConfig() {
 		return cachedCouchClientConfig.fetch {
 			String configPath = 'config/CouchClientConfig.groovy'
-			URL url = this.class.getClassLoader().getResource(configPath)
+			URL url = Thread.currentThread().contextClassLoader.getResource(configPath)
 			if (!url) {
 				configPath = 'src/main/resources/config/CouchClientConfig.groovy'
 				url = new File(configPath).toURI().toURL()
