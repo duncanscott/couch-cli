@@ -34,6 +34,7 @@ package net.duncanscott.couch_cli.client
 import net.duncanscott.couch_cli.action.*
 import net.duncanscott.couch_cli.util.CouchApi
 import net.duncanscott.couch_cli.util.OnDemandCache
+import org.apache.log4j.FileAppender
 import org.apache.log4j.Logger
 import org.codehaus.groovy.runtime.StackTraceUtils
 
@@ -52,6 +53,7 @@ class CouchClient {
     static Map<String, Class<? extends AbstractAction>> actions = [
         'backup':BackupAction,
         'cancelReplication':CancelReplicationAction,
+		'create':CreateDatabaseAction,
         'deleteBackups':DeleteBackupsAction,
         'delete':DeleteDatabaseAction,
         'deleteRecords':DeleteRecordsAction,
@@ -60,7 +62,11 @@ class CouchClient {
         'listBackups':ListBackupsAction,
         'listRecords':ListRecordsAction,
         'replicate':ReplicateAction,
-        'restore':RestoreAction
+        'restore':RestoreAction,
+        'compactDatabase':CompactDatabaseAction,
+        'listDesignDocuments':ListDesignDocumentsAction,
+        'compactViews':CompactViewsAction,
+        'cleanupViews':CleanupViewsAction
     ]
 
     static List<String> getActionNames() {
@@ -90,7 +96,7 @@ class CouchClient {
 	ConfigObject getCouchClientConfig() {
 		return cachedCouchClientConfig.fetch {
 			String configPath = 'config/CouchClientConfig.groovy'
-			URL url = this.class.getClassLoader().getResource(configPath)
+			URL url = Thread.currentThread().contextClassLoader.getResource(configPath)
 			if (!url) {
 				configPath = 'src/main/resources/config/CouchClientConfig.groovy'
 				url = new File(configPath).toURI().toURL()
@@ -165,7 +171,7 @@ class CouchClient {
 
 	static void error(String error) {
 		logger.error error
-		System.err << "error: ${error}\n"
+		System.err << "${error}\n"
 	}
 
 	int processCommandLineInstructions(args) {
@@ -223,8 +229,11 @@ class CouchClient {
 		try {
 			exitCode = new CouchClient().processCommandLineInstructions(args)
 		} catch (Throwable t) {
-			error "${StackTraceUtils.extractRootCause(t).class.simpleName}.  See log for details."
-			logger.fatal "${t.class.simpleName}", StackTraceUtils.sanitizeRootCause(t)
+            StackTraceUtils.sanitizeRootCause(t)
+			error "${t}.  See log for details."
+            logger.rootLogger.allAppenders.findAll { it instanceof FileAppender }.each { FileAppender f ->
+                message "logging to ${f.file}"
+            }
 		}
 		System.exit(exitCode)
 	}

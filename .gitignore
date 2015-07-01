@@ -1,3 +1,4 @@
+.DS_Store
 .classpath
 .gradle
 .project
@@ -9,4 +10,5 @@ build
 /.idea
 /couch-cli.iml
 junk.sh
+junk
 target-eclipse

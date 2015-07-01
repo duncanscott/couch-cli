@@ -38,23 +38,19 @@ import org.apache.commons.cli.Option
 /**
  * Created by Duncan on 2/1/14.
  */
-class TagOption extends BaseOption {
+class NameOption extends BaseOption {
 
-    TagOption(AbstractAction action) {
+    NameOption(AbstractAction action) {
         super(action)
-        cliBuilder._(longOpt:'tag', args:Option.UNLIMITED_VALUES, 'identify backup with tag')
+        cliBuilder.n(longOpt:'name', args: Option.UNLIMITED_VALUES, required:true, 'names of databases')
     }
 
-    Set<String> getTags() {
-        Set<String> tagNames = []
-        if (optionAccessor.tag) {
-            tagNames += optionAccessor.tags
+    Set<String> getNames() {
+        Set<String> nameArgs = []
+        if (optionAccessor.name) {
+            nameArgs += optionAccessor.names
         }
-        Collection<String> invalidTags = tagNames.findAll { it =~ /[^a-zA-Z0-9]/ }
-        if (invalidTags) {
-            throw new CouchClientErrorMessage("invalid tag(s) ${invalidTags.collect{'"' + it + '"'}}.  Tags must contain only letters and digits.")
-        }
-        return tagNames
-	}
+        return nameArgs
+    }
 
 }

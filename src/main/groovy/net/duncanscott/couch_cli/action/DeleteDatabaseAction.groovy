@@ -55,9 +55,10 @@ class DeleteDatabaseAction extends AbstractAction {
 		message "restored database ${couchDb.couchdb.name}.${CouchApi.REPLICATOR}"
 	}
 	
-	void deleteReplicatorDatabase(ConfigObject couchDb) {
+	boolean deleteReplicatorDatabase(ConfigObject couchDb) {
 		message "deleting database ${couchDb.couchdb.name}.${CouchApi.REPLICATOR}"
 		api.deleteDatabase(couchDb.couchdb.url, CouchApi.REPLICATOR)
+		return true
 	}
 	
 	void deleteDatabases(ConfigObject couchDb, Collection<String> databases) {
@@ -73,20 +74,23 @@ class DeleteDatabaseAction extends AbstractAction {
 	int performAction() {
 		ConfigObject couchDb = requireSubjectDatabase()
 		CouchClient.checkDelete(couchDb)
+		Set<String> databases = databasesOption.getDatabases(couchDb)
+		boolean replicatorDeleted = false
 		try {
-			Set<String> databases = databasesOption.getDatabases(couchDb)
 			if (databases.contains(CouchApi.REPLICATOR)) {
-				deleteReplicatorDatabase(couchDb)
+				replicatorDeleted = deleteReplicatorDatabase(couchDb)
 			}
 			databases.findAll{ it.startsWith('_') && it != CouchApi.REPLICATOR}.each { String database ->
 				message "skipping database ${couchDb.couchdb.name}.${database}"
 			}
 			deleteDatabases(couchDb, databases)
 		} finally {
-			try {
-				restoreReplicatorDatabase(couchDb)
-			} catch (Throwable t) {
-				log.error "restoration of replicator failed", t
+			if (replicatorDeleted) {
+				try {
+					restoreReplicatorDatabase(couchDb)
+				} catch (Throwable t) {
+					log.error "restoration of replicator failed", t
+				}
 			}
 		}
 		return CouchClient.SUCCESS

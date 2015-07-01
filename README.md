@@ -6,7 +6,7 @@ Command line interface to facilitate CouchDB replication and other administrativ
 ##Build Locally
 After cloning the project, you may cd to the project directory and type:
 
-    gradlew installApp
+    gradlew installDist
 
 The application will be created in directory ./build/install.
 
@@ -53,17 +53,22 @@ The application will be created in directory ./build/install.
 
     Actions are:
 
-       backup              Backup databases to --target with system generated prefix.  Databases must be identified via --name or --all.  Flags: --continuous, --push.
-       cancelReplication   Cancel all replication at specified couchdb (by deleting replication records in the _replicator database).
-       delete              Delete databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL WITH THIS ONE.
-       deleteBackups       Delete backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
-       deleteRecords       Delete records in databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL.
-       dumpRecords         Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name.
-       list                List all databases at specified couchdb
-       listBackups         List backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
-       listRecords         List all records in databases at the specified couchdb.  Must specify individual databases via --name or --all.
-       replicate           Replicate databases to --target.  Identify databases via --name or --all.  Flags: --continuous, --push.
-       restore             Restore the specified couchdb --from a backup.  Each database to restore must be identified via --name (--all is invalid). Flags: --push.
+       backup                Backup databases to --target with system generated prefix.  Databases must be identified via --name or --all.  Flags: --continuous, --push.
+       cancelReplication     Cancel all replication at specified couchdb (by deleting replication records in the _replicator database).
+       cleanupViews          Cleanup views at the specified couchdb (POST dbname/_view_cleanup).  Must specify individual databases via --name or --all.
+       compactDatabase       Compact databases at the specified couchdb.  Must specify individual databases via --name or --all.
+       compactViews          Compact all views in databases at the specified couchdb.  Must specify individual databases via --name or --all.
+       create                Create database(s) at the specified couchdb.  New databases are named via the --name option.
+       delete                Delete databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL WITH THIS ONE.
+       deleteBackups         Delete backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
+       deleteRecords         Delete records in databases at the specified couchdb.  Must specify individual databases via --name or --all.  CAREFULL.
+       dumpRecords           Output JSON for all records in databases at the specified couchdb.  Must specify individual databases via --name.
+       list                  List all databases at specified couchdb
+       listBackups           List backup databases at the specified couchdb.  Specify databases to include via the --tag, --olderThan, or --all options.
+       listDesignDocuments   List all design documents in databases at the specified couchdb.  Must specify individual databases via --name or --all.
+       listRecords           List all records in databases at the specified couchdb.  Must specify individual databases via --name or --all.
+       replicate             Replicate databases to --target.  Identify databases via --name or --all.  Flags: --continuous, --push.
+       restore               Restore the specified couchdb --from a backup.  Each database to restore must be identified via --name (--all is invalid). Flags: --push.
 
 To use the tool, you should specify a path to a configuration file via environment property COUCHCLI_CONFIG.  This file identifies the CouchDB instances the tool
 can work with and the operations that are permitted on each.  A sample configuration file is shown below.
@@ -129,8 +134,8 @@ backups containing the specified tags.
 New features can easily be added by adding subclasses of AbstractAction.  New action subclasses must be registered
 in the actions map of CouchClient.
 
-The logging level is currently set to debug.  The log file will include URLs that might include passwords.  If the logging level is increased
-to block the output from HTTPBuilder, URLs (and passwords) may still be logged in the case of errors.
+The logging level is currently set to debug.  The log file will include URLs that might include passwords.  The logging might be increased
+to block the output from HTTPBuilder to lessen the chance of passwords being logged.
 
 ##Issues
 
@@ -138,11 +143,7 @@ The code uses the Groovy HTTPBuilder to interact with CouchDB databases.  A know
 encoding URLs that contain a '+' character.  CouchDB allows database names that include the '+' character, but couch-cli will choke
 on such database names.
 
-At the time of writing (March 14, 2014), the IntelliJ gradle plugin is failing to work with gradle version 1.11 specified in the gradle wrapper task.
-You may use a local gradle install of verion 1.10 (and possibly lower) to import the project into IntelliJ.
-
-Some replication behavior is unintuitive.  It is important to understand how CouchDB replication works.
-If a local version of a database is ahead of another, the other database will not be replicated to the local database.  See the following:
+Some replication behavior is unintuitive.  If a local version of a database is ahead of another, the other database will not be replicated to the local database.  See the following:
 
     $ couch-cli list localhost
     _replicator
