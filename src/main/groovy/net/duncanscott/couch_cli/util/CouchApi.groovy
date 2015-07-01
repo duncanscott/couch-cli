@@ -159,24 +159,71 @@ class CouchApi {
 
 	void compactDatabase(String databaseBaseUrl, String database) {
 		String url = "${databaseBaseUrl}${database}/_compact"
-		HTTPBuilder http = httpBuillder(url)
-		http.request( POST, JSON ) {
-			response.success = { HttpResponseDecorator resp, respJson ->
-				logger.debug "compacted database ${url}"
-			}
-		}
+        logger.debug "compacting database using: ${url}"
+		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
+        http.request( POST ) {
+            uri.path = "/${database}/_compact"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                logger.debug "compacted database ${database}: ${respJson}"
+            }
+        }
 	}
 
 
-	void compactViews(String databaseBaseUrl, String database, String designDocument) {
-		String url = "${databaseBaseUrl}${database}/_compact/${designDocument}"
-		HTTPBuilder http = httpBuillder(url)
-		http.request( POST, JSON ) {
-			response.success = { HttpResponseDecorator resp, respJson ->
-				logger.debug "compacted views ${url}"
-			}
-		}
+	def compactViews(String databaseBaseUrl, String database, String designDocument) {
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        def jsonResp = null
+        http.request( POST ) {
+            uri.path = "/${database}/_compact/${designDocument}"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                jsonResp = respJson
+                logger.debug "compacted views ${database}/${designDocument}: ${respJson}"
+            }
+        }
+        return jsonResp
 	}
+
+
+    def cleanupViews(String databaseBaseUrl, String database) {
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        def jsonResp = null
+        http.request( POST ) {
+            uri.path = "/${database}/_view_cleanup"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                jsonResp = respJson
+                logger.debug "${database}/_view_cleanup: ${respJson}"
+            }
+        }
+        return jsonResp
+    }
+
+
+
+    ///dbname/_all_docs?startkey="_design/"&endkey="_design0"&include_docs=true
+    List<String> listDesignDocuments(String databaseBaseUrl, String database) {
+        List<String> docs = []
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        http.request( GET ) {
+            uri.path = "/${database}/_all_docs"
+            uri.query = [ startkey:'"_design"', endkey: '"_design0"', include_docs: true]
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, json ->
+                json.rows.each { docJson ->
+                    String docId = docJson.'id'
+                    String docName = docId - '_design/'
+                    docs << docName
+                }
+            }
+        }
+        return docs
+    }
 
 
     /*
@@ -195,6 +242,7 @@ class CouchApi {
     }
 
 
+    //not tested
     boolean validateDesignDocumentName(String databaseBaseUrl, String database, String designDocument) {
         boolean valid = false
         Map designDoc = getDesignDocument(databaseBaseUrl,database,designDocument)
@@ -207,17 +255,6 @@ class CouchApi {
     }
 
 
-    void cleanupViews(String databaseBaseUrl, String database) {
-        String url = "${databaseBaseUrl}${database}/_view_cleanup"
-        HTTPBuilder http = httpBuillder(url)
-        http.request( POST, JSON ) {
-            response.success = { HttpResponseDecorator resp, respJson ->
-                logger.debug "compacted views ${url}"
-            }
-        }
-    }
-
-
 	void deleteDatabase(String databaseBaseUrl, String databaseName) {
 		String url = "${databaseBaseUrl}${databaseName}/"
 		HTTPBuilder http = httpBuillder(url)
@@ -227,7 +264,8 @@ class CouchApi {
 		  }
 		}
 	}
-	
+
+
 	void createDatabase(String databaseBaseUrl, String databaseName) {
 		HTTPBuilder http = httpBuillder(databaseBaseUrl)
 		http.request( PUT, JSON ) {

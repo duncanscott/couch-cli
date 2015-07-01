@@ -34,6 +34,7 @@ package net.duncanscott.couch_cli.client
 import net.duncanscott.couch_cli.action.*
 import net.duncanscott.couch_cli.util.CouchApi
 import net.duncanscott.couch_cli.util.OnDemandCache
+import org.apache.log4j.FileAppender
 import org.apache.log4j.Logger
 import org.codehaus.groovy.runtime.StackTraceUtils
 
@@ -62,7 +63,10 @@ class CouchClient {
         'listRecords':ListRecordsAction,
         'replicate':ReplicateAction,
         'restore':RestoreAction,
-        'compact':CompactAction
+        'compactDatabase':CompactDatabaseAction,
+        'listDesignDocuments':ListDesignDocumentsAction,
+        'compactViews':CompactViewsAction,
+        'cleanupViews':CleanupViewsAction
     ]
 
     static List<String> getActionNames() {
@@ -167,7 +171,7 @@ class CouchClient {
 
 	static void error(String error) {
 		logger.error error
-		System.err << "error: ${error}\n"
+		System.err << "${error}\n"
 	}
 
 	int processCommandLineInstructions(args) {
@@ -225,8 +229,11 @@ class CouchClient {
 		try {
 			exitCode = new CouchClient().processCommandLineInstructions(args)
 		} catch (Throwable t) {
-			error "${StackTraceUtils.extractRootCause(t).class.simpleName}.  See log for details."
-			logger.fatal "${t.class.simpleName}", StackTraceUtils.sanitizeRootCause(t)
+            StackTraceUtils.sanitizeRootCause(t)
+			error "${t}.  See log for details."
+            logger.rootLogger.allAppenders.findAll { it instanceof FileAppender }.each { FileAppender f ->
+                message "logging to ${f.file}"
+            }
 		}
 		System.exit(exitCode)
 	}

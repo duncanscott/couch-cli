@@ -34,13 +34,13 @@ import net.duncanscott.couch_cli.option.NamedAndAllDatabasesOption
  email:duncan@duncanscott.net
  */
 
-class CompactAction extends AbstractAction {
+class CompactDatabaseAction extends AbstractAction {
 
     NamedAndAllDatabasesOption databasesOption
 
     @Override
     String getDescription() {
-        'Compact the specified couchdb.  Must specify individual databases via --name or --all.'
+        'Compact databases at the specified couchdb.  Must specify individual databases via --name or --all.'
     }
 
     @Override
