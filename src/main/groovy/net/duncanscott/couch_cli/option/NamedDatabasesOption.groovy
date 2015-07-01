@@ -42,12 +42,16 @@ import org.apache.commons.cli.Option
 class NamedDatabasesOption extends BaseOption {
 
     //keys are database URLs
-    private Map<String,OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault{new OnDemandCache<Set<String>>()}
-    private Map<String,OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault{new OnDemandCache<Set<String>>()}
+    private Map<String, OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault {
+        new OnDemandCache<Set<String>>()
+    }
+    private Map<String, OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault {
+        new OnDemandCache<Set<String>>()
+    }
 
     NamedDatabasesOption(AbstractAction action) {
         super(action)
-        cliBuilder.n(longOpt:'name', args: Option.UNLIMITED_VALUES, 'name(s) of databases on which to operate')
+        cliBuilder.n(longOpt: 'name', args: Option.UNLIMITED_VALUES, 'name(s) of databases on which to operate')
     }
 
     Set<String> getNames() {
@@ -70,11 +74,27 @@ class NamedDatabasesOption extends BaseOption {
         return cachedNamedDatabases[config.couchdb.url].fetch {
             Set<String> databases = []
             Set<String> badNames = []
-            getNames().each {String name ->
-                if (getAllDatabases(config).contains(name)) {
-                    databases << name
+            getNames().each { String name ->
+                List<String> viewSplit = name?.split('/')
+                String dbName = name
+                String viewName = null
+                if (2 == viewSplit?.size()) {
+                    dbName = viewSplit[0]
+                    viewName = viewName[1]
+                }
+                if (getAllDatabases(config).contains(dbName)) {
+                    if (viewName) {
+                        //validate view name
+                        if (action.api.validateDesignDocumentName(config.couchdb.url, dbName, viewName)) {
+                            databases << name
+                        } else {
+                            badNames << name
+                        }
+                    } else {
+                        databases << dbName
+                    }
                 } else {
-                    badNames << name
+                    badNames << dbName
                 }
             }
             if (badNames) {
