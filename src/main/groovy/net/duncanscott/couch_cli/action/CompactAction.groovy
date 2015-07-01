@@ -40,7 +40,7 @@ class CompactAction extends AbstractAction {
 
     @Override
     String getDescription() {
-        'Compact the specified couchdb.  Must specify individual databases via --name or --all.  To compact views use --name database_name/view_name'
+        'Compact the specified couchdb.  Must specify individual databases via --name or --all.'
     }
 
     @Override
@@ -51,10 +51,9 @@ class CompactAction extends AbstractAction {
     @Override
 	int performAction() {
 		ConfigObject config = requireSubjectDatabase()
-        databasesOption.requireDatabases(config).each { String database ->
-			api.doForAllRecords(config.couchdb.url, database, includeDocs, pageSize) { json ->
-				message "${config.couchdb.name}.${database}/${json.id}"
-			}
+        databasesOption.requireDatabases(config).each { String name ->
+            message "compacting database ${config.couchdb.name}.${name}"
+            api.compactDatabase(config.couchdb.url, name)
 		}
 		return CouchClient.SUCCESS
 	}

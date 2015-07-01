@@ -42,10 +42,10 @@ import org.apache.commons.cli.Option
 class NamedDatabasesOption extends BaseOption {
 
     //keys are database URLs
-    private Map<String, OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault {
+    protected Map<String, OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault {
         new OnDemandCache<Set<String>>()
     }
-    private Map<String, OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault {
+    protected Map<String, OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault {
         new OnDemandCache<Set<String>>()
     }
 
@@ -70,31 +70,14 @@ class NamedDatabasesOption extends BaseOption {
 
     Set<String> getNamedDatabases(ConfigObject config) {
         assert config.couchdb.url
-
         return cachedNamedDatabases[config.couchdb.url].fetch {
             Set<String> databases = []
             Set<String> badNames = []
             getNames().each { String name ->
-                List<String> viewSplit = name?.split('/')
-                String dbName = name
-                String viewName = null
-                if (2 == viewSplit?.size()) {
-                    dbName = viewSplit[0]
-                    viewName = viewName[1]
-                }
-                if (getAllDatabases(config).contains(dbName)) {
-                    if (viewName) {
-                        //validate view name
-                        if (action.api.validateDesignDocumentName(config.couchdb.url, dbName, viewName)) {
-                            databases << name
-                        } else {
-                            badNames << name
-                        }
-                    } else {
-                        databases << dbName
-                    }
+                if (getAllDatabases(config).contains(name)) {
+                    databases << name
                 } else {
-                    badNames << dbName
+                    badNames << name
                 }
             }
             if (badNames) {

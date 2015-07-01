@@ -10,10 +10,7 @@ class CreateAndDeleteIntegrationSpec extends Specification {
 	static Logger logger = Logger.getLogger(CreateAndDeleteIntegrationSpec.class.name)
 	CouchClient client  = new CouchClient()
 	CouchApi api = new CouchApi()
-	
-	static String CREATE = 'create'
-	static String DELETE = 'delete'
-	
+
 	def "create database and delete test"() {
 		setup:
 			String database = 'localhost'
@@ -21,8 +18,8 @@ class CreateAndDeleteIntegrationSpec extends Specification {
 			ConfigObject config = client.getConfiguration(database)
 			Set<String> databaseNames = []
 			List<String> args = "${database} --name ${newName}".split(/\s+/)
-			CreateDatabaseAction createAction = new CreateDatabaseAction(couchClient:client,api:api,actionName:CREATE)
-			DeleteDatabaseAction deleteAction = new DeleteDatabaseAction(couchClient:client,api:api,actionName:DELETE)
+			CreateDatabaseAction createAction = new CreateDatabaseAction(couchClient:client,api:api,actionName:'create')
+			DeleteDatabaseAction deleteAction = new DeleteDatabaseAction(couchClient:client,api:api,actionName:'delete')
 			List<AbstractAction> actions = []
 			actions << deleteAction
 			actions << createAction

@@ -61,7 +61,8 @@ class CouchClient {
         'listBackups':ListBackupsAction,
         'listRecords':ListRecordsAction,
         'replicate':ReplicateAction,
-        'restore':RestoreAction
+        'restore':RestoreAction,
+        'compact':CompactAction
     ]
 
     static List<String> getActionNames() {

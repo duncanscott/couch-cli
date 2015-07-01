@@ -178,6 +178,7 @@ class CouchApi {
 		}
 	}
 
+
     /*
     http://server-name:5984/db_name/_design/view_name
     */
