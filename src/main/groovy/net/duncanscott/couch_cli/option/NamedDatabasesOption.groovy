@@ -42,12 +42,16 @@ import org.apache.commons.cli.Option
 class NamedDatabasesOption extends BaseOption {
 
     //keys are database URLs
-    private Map<String,OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault{new OnDemandCache<Set<String>>()}
-    private Map<String,OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault{new OnDemandCache<Set<String>>()}
+    protected Map<String, OnDemandCache<Set<String>>> cachedAllDatabases = [:].withDefault {
+        new OnDemandCache<Set<String>>()
+    }
+    protected Map<String, OnDemandCache<Set<String>>> cachedNamedDatabases = [:].withDefault {
+        new OnDemandCache<Set<String>>()
+    }
 
     NamedDatabasesOption(AbstractAction action) {
         super(action)
-        cliBuilder.n(longOpt:'name', args: Option.UNLIMITED_VALUES, 'name(s) of databases on which to operate')
+        cliBuilder.n(longOpt: 'name', args: Option.UNLIMITED_VALUES, 'name(s) of databases on which to operate')
     }
 
     Set<String> getNames() {
@@ -66,11 +70,10 @@ class NamedDatabasesOption extends BaseOption {
 
     Set<String> getNamedDatabases(ConfigObject config) {
         assert config.couchdb.url
-
         return cachedNamedDatabases[config.couchdb.url].fetch {
             Set<String> databases = []
             Set<String> badNames = []
-            getNames().each {String name ->
+            getNames().each { String name ->
                 if (getAllDatabases(config).contains(name)) {
                     databases << name
                 } else {

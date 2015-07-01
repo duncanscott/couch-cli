@@ -32,22 +32,30 @@ package net.duncanscott.couch_cli.util
  */
 
 import groovy.json.JsonBuilder
+import groovy.json.StringEscapeUtils
 import groovyx.net.http.EncoderRegistry
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.HttpResponseDecorator
 import org.apache.log4j.Logger
+import org.codehaus.groovy.runtime.StackTraceUtils
 
 import static groovyx.net.http.ContentType.JSON
+import static groovyx.net.http.ContentType.TEXT
 import static groovyx.net.http.Method.*
 
 class CouchApi {
 	
 	static final Logger logger = Logger.getLogger(CouchApi.class.name)
 	static final String REPLICATOR = '_replicator'
-	
+
+	private httpBuillder(String databaseBaseUrl) {
+		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
+		http.encoderRegistry = new EncoderRegistry(charset: 'UTF-8')
+		return http
+	}
+
 	List<String> getDatabaseList(String databaseUrl) {
-		HTTPBuilder http = new HTTPBuilder(databaseUrl)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(databaseUrl)
 		List<String> databases = []
 		
 		http.request(GET,JSON) { req ->
@@ -59,7 +67,7 @@ class CouchApi {
 		return databases
 	}
 
-	
+
 	private String startReplication(HTTPBuilder http, String databaseBaseUrl, String databaseName, String replicationDatabaseBaseUrl, String replicationDatabaseName, boolean continuous) {
 		/*
 		 * POST /_replicate
@@ -86,27 +94,24 @@ class CouchApi {
 	}
 	
 	String startPullReplication(String databaseBaseUrl, String databaseName, String replicationDatabaseBaseUrl, String replicationDatabaseName, boolean continuous = false) {
-		HTTPBuilder http = new HTTPBuilder(replicationDatabaseBaseUrl)  //pulling to backup database is better than pushing, especially when attachments need to be copied
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(replicationDatabaseBaseUrl)  //pulling to backup database is better than pushing, especially when attachments need to be copied
 		return startReplication(http, databaseBaseUrl, databaseName, replicationDatabaseBaseUrl, replicationDatabaseName, continuous)
 	}
 	
 	String startPushReplication(String databaseBaseUrl, String databaseName, String replicationDatabaseBaseUrl, String replicationDatabaseName, boolean continuous = false) {
-		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(databaseBaseUrl)
 		return startReplication(http, databaseBaseUrl, databaseName, replicationDatabaseBaseUrl, replicationDatabaseName, continuous)
 	}
 
 	private String doForPageReturnNextKey(String databaseBaseUrl, String databaseName, boolean includeDocs, int pageSize, Closure doThis, String startKey) {
-		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(databaseBaseUrl)
 		int pageSizePluss1 = pageSize + 1
 		if (pageSizePluss1 < 2) {
 			pageSizePluss1 = 2
 		}
 		Map query = [ limit:pageSizePluss1, include_docs: includeDocs ]
 		if (startKey) {
-			query['startkey'] = "\"${groovy.json.StringEscapeUtils.escapeJavaScript(startKey)}\"" //express startKey as JSON string 
+			query['startkey'] = "\"${StringEscapeUtils.escapeJavaScript(startKey)}\"" //express startKey as JSON string
 		}
 		int recordCount = 0
 		def lastJson = null
@@ -143,29 +148,126 @@ class CouchApi {
 
 	void deleteRecord(String databaseBaseUrl, String database, String recordId, String revision) {
 		String url = "${databaseBaseUrl}${database}/${recordId}?rev=${revision}"
-		HTTPBuilder http = new HTTPBuilder(url)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(url)
 		http.request( DELETE, JSON ) {
 			response.success = { HttpResponseDecorator resp, respJson ->
 				logger.debug "deleted record ${url}"
 			}
 		}
 	}
-	
+
+
+	void compactDatabase(String databaseBaseUrl, String database) {
+		String url = "${databaseBaseUrl}${database}/_compact"
+        logger.debug "compacting database using: ${url}"
+		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
+        http.request( POST ) {
+            uri.path = "/${database}/_compact"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                logger.debug "compacted database ${database}: ${respJson}"
+            }
+        }
+	}
+
+
+	def compactViews(String databaseBaseUrl, String database, String designDocument) {
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        def jsonResp = null
+        http.request( POST ) {
+            uri.path = "/${database}/_compact/${designDocument}"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                jsonResp = respJson
+                logger.debug "compacted views ${database}/${designDocument}: ${respJson}"
+            }
+        }
+        return jsonResp
+	}
+
+
+    def cleanupViews(String databaseBaseUrl, String database) {
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        def jsonResp = null
+        http.request( POST ) {
+            uri.path = "/${database}/_view_cleanup"
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, respJson ->
+                jsonResp = respJson
+                logger.debug "${database}/_view_cleanup: ${respJson}"
+            }
+        }
+        return jsonResp
+    }
+
+
+
+    ///dbname/_all_docs?startkey="_design/"&endkey="_design0"&include_docs=true
+    List<String> listDesignDocuments(String databaseBaseUrl, String database) {
+        List<String> docs = []
+        HTTPBuilder http = httpBuillder(databaseBaseUrl)
+        http.request( GET ) {
+            uri.path = "/${database}/_all_docs"
+            uri.query = [ startkey:'"_design"', endkey: '"_design0"', include_docs: true]
+            headers.'Content-Type' = JSON
+            headers.'Accept' = JSON
+            response.success = { HttpResponseDecorator resp, json ->
+                json.rows.each { docJson ->
+                    String docId = docJson.'id'
+                    String docName = docId - '_design/'
+                    docs << docName
+                }
+            }
+        }
+        return docs
+    }
+
+
+    /*
+    http://server-name:5984/db_name/_design/view_name
+    */
+    Map getDesignDocument(String databaseBaseUrl, String database, String designDocument) {
+        String url = "${databaseBaseUrl}${database}/_design/${designDocument}"
+        HTTPBuilder http = httpBuillder(url)
+        Map designDoc = null
+        http.request( GET, JSON ) {
+            response.success = { HttpResponseDecorator resp, Map respJson ->
+                designDoc = respJson
+            }
+        }
+        return designDoc
+    }
+
+
+    //not tested
+    boolean validateDesignDocumentName(String databaseBaseUrl, String database, String designDocument) {
+        boolean valid = false
+        Map designDoc = getDesignDocument(databaseBaseUrl,database,designDocument)
+        if (designDoc?.'error') {
+            valid = false
+        } else if (designDoc?.'_id') {
+            valid = true
+        }
+        return valid
+    }
+
+
 	void deleteDatabase(String databaseBaseUrl, String databaseName) {
 		String url = "${databaseBaseUrl}${databaseName}/"
-		HTTPBuilder http = new HTTPBuilder(url)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(url)
 		http.request( DELETE, JSON ) {
 		  response.success = { HttpResponseDecorator resp, respJson ->
 			logger.debug "deleted database ${url}"
 		  }
 		}
 	}
-	
+
+
 	void createDatabase(String databaseBaseUrl, String databaseName) {
-		HTTPBuilder http = new HTTPBuilder(databaseBaseUrl)
-		http.encoderRegistry = new EncoderRegistry( charset: 'UTF-8' )
+		HTTPBuilder http = httpBuillder(databaseBaseUrl)
 		http.request( PUT, JSON ) {
 		  uri.path = databaseName
 		  response.success = { HttpResponseDecorator resp, respJson ->

@@ -1,7 +1,6 @@
 package net.duncanscott.couch_cli.util
 
 import net.duncanscott.couch_cli.client.CouchClient
-import org.apache.log4j.Logger
 import spock.lang.Specification
 
 class CouchApiIntegrationSpec extends Specification {

@@ -1,12 +1,13 @@
 apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'application'
 apply plugin: 'maven'
-apply plugin:'application'
 
 sourceCompatibility = 1.7
-mainClassName = 'net.duncanscott.couch_cli.client.CouchClient'
 
-task wrapper(type:Wrapper) {
-	gradleVersion = '1.11'
+repositories {
+	mavenCentral()
 }
 
 jar {
@@ -15,16 +16,24 @@ jar {
 	}
 }
 
-repositories {
-	mavenCentral()
+mainClassName = 'net.duncanscott.couch_cli.client.CouchClient'
+
+task wrapper(type:Wrapper) {
+	gradleVersion = '2.4'
 }
 
 dependencies {
-	compile 'org.codehaus.groovy:groovy-all:2.2.2'
+	compile 'org.codehaus.groovy:groovy-all:2.4.3'
 	compile 'log4j:log4j:1.2.17'
-	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
-	compile 'commons-cli:commons-cli:1.2'
-	testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+	compile 'commons-cli:commons-cli:1.3.1'
+	testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+processResources {
+	filesMatching("**/CouchClientConfig.groovy") {
+		expand project.properties
+	}
 }
 
 configurations {
@@ -65,12 +74,6 @@ sourceSets {
 	}
 }
 
-processResources {
-	filesMatching("**/CouchClientConfig.groovy") {
-		expand project.properties
-	}
-}
-
 task unitTest(type:Test) {
 	binResultsDir = file("$buildDir/$name-results/binary")
 	reports {
@@ -94,6 +97,19 @@ task integrationTest(type:Test) {
 
 test.dependsOn integrationTest, unitTest
 
+test {
+	testLogging {
+		// set options for log level LIFECYCLE
+		events "failed"
+		exceptionFormat "short"
+		// set options for log level DEBUG
+		debug {
+			events "started", "skipped", "failed"
+			exceptionFormat "full"
+		}
+	}
+}
+
 tasks.withType(Test) { testTask ->
 	beforeTest { TestDescriptor descriptor->
 		String msg = "running ${testTask.name}: ${descriptor.className} \"${descriptor.name}\""
@@ -115,43 +131,5 @@ tasks.withType(Test) { testTask ->
 			default:
 				logger.warn "${logMessage}"
 		}
-	}
-}
-
-task projectProperties {
-	group 'properties'
-	description 'output project.properties'
-	doLast {
-		project.properties.keySet().sort().each { key ->
-			logger.warn "${key}=${project.properties[key]}"
-		}
-	}
-}
-
-task gradleProperties {
-	group 'properties'
-	description 'output gradle.properties'
-	doLast {
-		gradle.properties.keySet().sort().each { key ->
-			logger.warn "${key}=${gradle.properties[key]}"
-		}
-	}
-}
-
-task projectConfigurations {
-	group 'properties'
-	description 'output project.configurations'
-	doLast {
-		project.configurations.sort{ it.name }.each { Configuration config ->
-			logger.warn "${config.name}"
-		}
-	}
-}
-
-task gradleVersion {
-	group 'properties'
-	description 'output project.properties[gradleVersion]'
-	doLast {
-		logger.warn "gradleVersion=${gradle.properties['gradleVersion']}"
 	}
 }
