@@ -219,6 +219,7 @@ class CouchClient {
             exitCode = action.doPerformAction()
         } catch (CouchClientErrorMessage errorMessage) {
             error errorMessage.message
+            logger.error StackTraceUtils.sanitizeRootCause(t)
             exitCode = errorMessage.exitCode
         }
         return exitCode
