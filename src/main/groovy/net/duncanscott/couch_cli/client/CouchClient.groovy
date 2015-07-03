@@ -219,7 +219,6 @@ class CouchClient {
             exitCode = action.doPerformAction()
         } catch (CouchClientErrorMessage errorMessage) {
             error errorMessage.message
-            logger.error StackTraceUtils.sanitizeRootCause(t)
             exitCode = errorMessage.exitCode
         }
         return exitCode
@@ -230,7 +229,7 @@ class CouchClient {
 		try {
 			exitCode = new CouchClient().processCommandLineInstructions(args)
 		} catch (Throwable t) {
-            StackTraceUtils.sanitizeRootCause(t)
+            logger.error StackTraceUtils.sanitizeRootCause(t)
 			error "${t}.  See log for details."
             logger.rootLogger.allAppenders.findAll { it instanceof FileAppender }.each { FileAppender f ->
                 message "logging to ${f.file}"
