@@ -57,7 +57,7 @@ class FromDatabaseOption extends BaseOption {
         if (configName) {
             return action.couchClient.requireConfiguration(configName)
         }
-        throw new CouchClientErrorMessage("from database not defined.  Please identify the database to replicate to via the --from option.")
+        throw new CouchClientErrorMessage("from database not defined.  Please identify the database to restore from via the --from option.")
     }
 
 }
